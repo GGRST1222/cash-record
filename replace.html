@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>記帳系統 - 修改</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a href="index.html" class="navbar-brand ms-3">記帳系統</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="record.html">回到紀錄</a>
+                    </li>                   
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">       
+        <div class="my-3 row justify-content-center">
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header"><h3 class="my-0">修改</h3></div>
+                    <div class="card-body">
+                        <div class="row mb-md-3">
+                            <label for="myItem" class="col-md-3 col-form-label">時間</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="myTime" disabled>
+                            </div>
+                        </div>
+                        <div class="row mb-md-3">
+                            <label for="myItem" class="col-md-3 col-form-label">品項</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="myItem" required>
+                            </div>
+                        </div>
+                        <div class="row mb-md-3">
+                            <label for="myCost" class="col-md-3 col-form-label">金額</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" placeholder="新台幣,單位:元" pattern="[0-9]+" id="myCost" required>
+                            </div>
+                        </div>
+                        <div class="row mb-md-3">
+                            <label for="myContent" class="col-md-3 col-form-label">備註</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" id="myContent" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-2 row">
+                            <div class="col-6">
+                                <a class="btn btn-primary w-100" id="submit">儲存</a>
+                            </div>
+                            <div class="col-6">
+                                <a href="record.html" class="btn btn-secondary w-100 float-end" id="reset">取消</a>
+                            </div>              
+                        </div>
+                    </div>                
+                </div>
+            </div>                     
+        </div>
+    </div>
+</body>
+<script>
+    $(function(){
+        const key = JSON.parse(localStorage.getItem('key'));//取得key(全域)
+        const request = indexedDB.open('cash-record', 1);//打開webSQL資料庫
+
+        request.onsuccess = function () {
+            const db = request.result;
+            const transaction = db.transaction('record', 'readwrite');
+            const store = transaction.objectStore('record');
+
+            const query = store.get(key)
+            query.onsuccess = function () {
+                record = query.result
+                // console.log(record)
+
+                $('#myTime').val(record.datetime);
+                $('#myItem').val(record.item);
+                $('#myCost').val(record.cost);
+                $('#myContent').val(record.content);
+
+                const save = JSON.parse(localStorage.getItem('save'));//即時保存輸入資料save，必免頁面重新整理導致資料刷新
+                if (save != null) { 
+                    if (!!save.item) {
+                        $('#myItem').val(save.item); 
+                    } 
+                    if (!!save.cost) {
+                        $('#myCost').val(save.cost); 
+                    }
+                    if (!!save.content) {
+                        $('#myContent').val(save.content); 
+                    }  
+                }
+
+                $('#myItem,#myCost,#myContent').keyup(function () { 
+                    let save = { 
+                        'item': $('#myItem').val(), 
+                        'cost': $('#myCost').val(), 
+                        'content': $('#myContent').val()
+                    }; 
+                    localStorage.setItem('save',JSON.stringify(save));
+                });   
+            }
+        }
+        
+        $('#submit').click(function(){
+            var item = $('#myItem').val();
+            var cost = $('#myCost').val();
+            var content = $('#myContent').val();
+
+            var record = {
+                datetime: key,
+                item: $('#myItem').val(), 
+                cost: $('#myCost').val(), 
+                content: $('#myContent').val()
+            }
+
+            const request = indexedDB.open('cash-record', 1);
+            request.onsuccess = function () {
+                const db = request.result;
+                const transaction = db.transaction('record', 'readwrite');
+                const store = transaction.objectStore('record');
+                store.put(record);
+            };
+            
+            alert('修改成功!');
+            localStorage.removeItem('save');
+            localStorage.removeItem('key');
+            //離開頁面移除key、save
+            window.location.href = 'record.html';//導回紀錄頁面
+        });
+
+        $('#reset').click(function(){
+            localStorage.removeItem('key');
+            localStorage.removeItem('save');
+            //離開頁面移除key、save
+        });
+    });
+</script>
+</html>
