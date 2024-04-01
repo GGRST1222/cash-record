@@ -73,6 +73,7 @@
 <script>
     $(function(){
         const key = JSON.parse(localStorage.getItem('key'));//取得key(全域)
+<<<<<<< HEAD
         const request = indexedDB.open('cash-record', 1);//打開webSQL資料庫
 
         request.onsuccess = function () {
@@ -114,10 +115,44 @@
             }
         }
         
+=======
+        var db = openDatabase('mydatabase','1.0','cash_record',2*1024*1024);//打開webSQL資料庫
+        db.transaction(function(record){
+            record.executeSql(
+                'SELECT * FROM cash_record WHERE time=?',[key],function(record,result){//利用time = key 調出該筆資料
+                    $('#myTime').val(result.rows.item(0).time);
+                    $('#myItem').val(result.rows.item(0).item);
+                    $('#myCost').val(result.rows.item(0).cost);
+                    $('#myContent').val(result.rows.item(0).content);
+                    const save = JSON.parse(localStorage.getItem('save'));//即時保存輸入資料save，必免頁面重新整理導致資料刷新
+                    if (save != null) { 
+                        if (!!save.item) {
+                            $('#myItem').val(save.item); 
+                        } 
+                        if (!!save.cost) {
+                            $('#myCost').val(save.cost); 
+                        }
+                        if (!!save.content) {
+                            $('#myContent').val(save.content); 
+                        }  
+                    }
+                    $('#myItem,#myCost,#myContent').keyup(function () { 
+                        let save = { 
+                            'item': $('#myItem').val(), 
+                            'cost': $('#myCost').val(), 
+                            'content': $('#myContent').val()
+                        }; 
+                        localStorage.setItem('save',JSON.stringify(save));
+                    });         
+                }
+            );
+        });
+>>>>>>> 91abaac09fab79fd36645cd21ccab903840c64b9
         $('#submit').click(function(){
             var item = $('#myItem').val();
             var cost = $('#myCost').val();
             var content = $('#myContent').val();
+<<<<<<< HEAD
 
             var record = {
                 datetime: key,
@@ -134,13 +169,22 @@
                 store.put(record);
             };
             
+=======
+            var db = openDatabase('mydatabase','1.0','cash_record',2*1024*1024);
+            db.transaction(function(record){
+                record.executeSql('UPDATE cash_record SET item=?, cost=?, content=? WHERE time = ?',[item, cost, content,key]);//將修改後的資料丟回資料庫
+            });
+>>>>>>> 91abaac09fab79fd36645cd21ccab903840c64b9
             alert('修改成功!');
             localStorage.removeItem('save');
             localStorage.removeItem('key');
             //離開頁面移除key、save
             window.location.href = 'record.html';//導回紀錄頁面
         });
+<<<<<<< HEAD
 
+=======
+>>>>>>> 91abaac09fab79fd36645cd21ccab903840c64b9
         $('#reset').click(function(){
             localStorage.removeItem('key');
             localStorage.removeItem('save');
