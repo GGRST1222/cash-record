@@ -73,7 +73,6 @@
 <script>
     $(function(){
         const key = JSON.parse(localStorage.getItem('key'));//取得key(全域)
-<<<<<<< HEAD
         const request = indexedDB.open('cash-record', 1);
         request.onsuccess = function () {
             const db = request.result;
@@ -100,24 +99,6 @@
                 const store = transaction.objectStore('record');
                 const query = store.delete(key)
             }
-=======
-        var db = openDatabase('mydatabase','1.0','cash_record',2*1024*1024);//打開webSQL資料庫
-        db.transaction(function(record){
-            record.executeSql(
-                'SELECT * FROM cash_record WHERE time=?',[key],function(record,result){//利用time = key 調出該筆資料
-                    $('#myTime').val(result.rows.item(0).time);
-                    $('#myItem').val(result.rows.item(0).item);
-                    $('#myCost').val(result.rows.item(0).cost);
-                    $('#myContent').val(result.rows.item(0).content);
-                }
-            );
-        });
-        $('#submit').click(function(){
-            var db = openDatabase('mydatabase','1.0','cash_record',2*1024*1024);
-            db.transaction(function(record){
-                record.executeSql('DELETE FROM cash_record WHERE time = ?',[key]);//刪除該筆資料
-            });
->>>>>>> 91abaac09fab79fd36645cd21ccab903840c64b9
             localStorage.removeItem('key');
             alert('刪除成功!');
             window.location.href = 'record.html';//導回紀錄頁面
